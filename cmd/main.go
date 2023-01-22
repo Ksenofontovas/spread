@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/Ksenofontovas/spread/internal/repository"
 	"github.com/Ksenofontovas/spread/internal/service"
+	"github.com/go-co-op/gocron"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -23,6 +23,8 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logrus.Fatalf("error loading env variables: %s", err.Error())
 	}
+
+	s := gocron.NewScheduler(time.UTC)
 
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     viper.GetString("db.host"),
@@ -56,20 +58,18 @@ func main() {
 	repos := repository.NewRepository(db, exchanges)
 	service := service.NewService(repos)
 
-	tickers, err := service.GetTickers(pairs)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	fmt.Println(tickers)
-
-	for _, ticker := range tickers {
-		res, err := service.SaveTicker(ticker, time.Now())
+	s.Every(10).Second().Do(func() {
+		tickers, err := service.GetTickers(pairs)
 		if err != nil {
 			logrus.Error(err)
 		}
-		fmt.Println(res)
-	}
+		for _, ticker := range tickers {
+			_, err := service.SaveTicker(ticker, time.Now())
+			if err != nil {
+				logrus.Error(err)
+			}
+		}
+	})
 
 }
 

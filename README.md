@@ -2,7 +2,7 @@
 ###  Docker
 ###### 
 sudo docker run --name=pg_spread -e POSTGRES_PASSWORD="qwerty" -p 5432:5432 -d --rm postgres
-docker compose --env-file ../.env.dev up
+docker compose --env-file .env -f compose/pg.yml up --detach
 ######
 ###  Migrations
 ######
