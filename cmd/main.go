@@ -63,8 +63,9 @@ func main() {
 		if err != nil {
 			logrus.Error(err)
 		}
+		currentTime := time.Now()
 		for _, ticker := range tickers {
-			_, err := service.SaveTicker(ticker, time.Now())
+			_, err := service.SaveTicker(ticker, currentTime.Round(time.Second))
 			if err != nil {
 				logrus.Error(err)
 			}
