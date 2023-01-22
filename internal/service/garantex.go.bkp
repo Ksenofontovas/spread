@@ -1,0 +1,18 @@
+package service
+
+import (
+	"github.com/Ksenofontovas/spread"
+	"github.com/Ksenofontovas/spread/internal/repository"
+)
+
+type GarantexService struct {
+	repo repository.Garantex
+}
+
+func NewGarantexService(repo repository.Garantex) *GarantexService {
+	return &GarantexService{repo: repo}
+}
+
+func (s *GarantexService) GetTickers(pairs []string) (resp []spread.TickerResponse, err error) {
+	return s.repo.GetTickers(pairs)
+}

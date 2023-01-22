@@ -1,0 +1,86 @@
+package repository
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"time"
+
+	"github.com/Ksenofontovas/spread"
+)
+
+// const (
+// 	tickerURL    = "api/v2/trades"
+// 	exchangeName = "Garantex"
+// )
+
+type GarantexTickerSResponse struct {
+	// ID        int       `json:"id"`
+	Price string `json:"price"`
+	// Volume    string    `json:"volume"`
+	// Funds     string    `json:"funds"`
+	Market string `json:"market"`
+	// CreatedAt time.Time `json:"created_at"`
+
+}
+
+type GarantexClient struct {
+	host       string
+	httpClient *http.Client
+	name       string
+	tickerURL  string
+}
+
+func NewGarantexClient(host string, timeout time.Duration) *GarantexClient {
+	client := &http.Client{
+		Timeout: timeout,
+	}
+	return &GarantexClient{
+		host:       host,
+		httpClient: client,
+		tickerURL:  "api/v2/trades",
+		name:       "Garantex",
+	}
+}
+
+func (c *GarantexClient) do(method, endpoint string, params map[string]string) (*http.Response, error) {
+	baseURL := fmt.Sprintf("%s/%s", c.host, endpoint)
+	req, err := http.NewRequest(method, baseURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	q := req.URL.Query()
+	for key, val := range params {
+		q.Set(key, val)
+	}
+	req.URL.RawQuery = q.Encode()
+	return c.httpClient.Do(req)
+}
+
+func (c *GarantexClient) GetTickers(pairs []string) (resp []spread.TickerResponse, err error) {
+
+	market := make(map[string]string)
+	for _, pair := range pairs {
+		var garantexResponse []GarantexTickerSResponse
+		market["market"] = pair
+		res, err := c.do(http.MethodGet, tickerURL, market)
+		if err != nil {
+			return resp, err
+		}
+		defer res.Body.Close()
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return resp, err
+		}
+		if err = json.Unmarshal(body, &garantexResponse); err != nil {
+			return resp, err
+		}
+		tickerResponse := spread.TickerResponse{Symbol: garantexResponse[0].Market, Price: garantexResponse[0].Price, Exchange: exchangeName}
+		resp = append(resp, tickerResponse)
+	}
+
+	return
+
+}
