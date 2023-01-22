@@ -70,7 +70,7 @@ func main() {
 			}
 		}
 	})
-
+	s.StartBlocking()
 }
 
 func initConfig() error {

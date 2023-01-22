@@ -1,0 +1,22 @@
+db:
+    username: "postgres"
+    host: "localhost"
+    port: "5432"
+    dbname: "symbols"
+    sslmode: "disable"
+   # password: "qwerty"
+
+pairs:
+  - "usdtrub"
+  - "btcusdt"
+  - "btcrub"
+
+garantex:
+    name: "Garantex"
+    url: "https://garantex.io"
+    timeout: 5 #seconds
+
+binance:
+    name: "Binance"
+    url: "https://api.binance.com"
+    timeout: 5 #seconds
